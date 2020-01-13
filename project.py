@@ -49,7 +49,7 @@ def kppv(apprent, classe_origine, k, x):
         closestDist = np.argsort(distance)
         labelsClosest = []
         for elt in closestDist[0, :k]:
-            labelsClosest.append(classe_origine[0][elt])
+            labelsClosest.append(classe_origine[elt])
         counter = collections.Counter(labelsClosest)
         value = counter.most_common(1)
         labels.append(value[0][0])
@@ -75,7 +75,7 @@ def entrainementBayes(apprent, classe_origine):
     # Pour chaque classe
     for c in range(k):
         # Obtention de la sous-matrice pour la classe c
-        nb = np.count_nonzero(classe_origine == c+1)
+        nb = classe_origine.count(c+1)
         submatrix = np.zeros([nbFeatures, nb])
         for f in range(nbFeatures):
             n = 0
@@ -124,31 +124,104 @@ def bayes(m, sigma, p, x):
     return labels
 
 
-def calculScore(listeLabels):
+def calculScore(listeLabels, vraieValeur):
     score = 0
-    for i in range(50):
-        if listeLabels[i] == 1:
-            score += 1
-    for i in range(50, 100):
-        if listeLabels[i] == 2:
-            score += 1
-    for i in range(100, 150):
-        if listeLabels[i] == 3:
+    for i in range(len(listeLabels)):
+        if listeLabels[i] == vraieValeur[i]:
             score += 1
     return score
 
 
 if __name__ == "__main__":
-    data = loadmat("p1_data1.mat")
+
+    ## 2.1. Comparaison standard
+    data_1 = loadmat("p1_data1.mat")
 
     # K plus proches voisins
-    labels_kppv = kppv(data["x"], data["clasapp"], 5, data["test"])
-    score_kppv = calculScore(labels_kppv)
-    print(score_kppv/len(labels_kppv)*100)
+    print("Partie 2.1.")
+    classes = [1] * 50
+    classes += [2] * 50
+    classes += [3] * 50
+    for i in range(8):
+        labels_kppv = kppv(data_1["test"], classes, 2*i+1, data_1["x"])
+        score_kppv = calculScore(labels_kppv, data_1["clasapp"][0])
+        print("k : ", 2*i+1, "score : ", score_kppv/len(labels_kppv)*100)
 
     # Naive Bayes
-    m, sigma, p = entrainementBayes(data["x"], data["clasapp"][0])
-    labels_bayes = bayes(m, sigma, p, data["test"])
-    score_bayes = calculScore(labels_bayes)
-    print(score_bayes/len(labels_kppv)*100)
+    m, sigma, p = entrainementBayes(data_1["test"], classes)
+    labels_bayes = bayes(m, sigma, p, data_1["x"])
+    score_bayes = calculScore(labels_bayes, data_1["clasapp"][0])
+    print("Naive Bayes : ", score_bayes/len(labels_bayes)*100)
 
+    ## 2.2. Absence de professeur
+    print("Partie 2.2.")
+    data_2 = loadmat("p1_data2.mat")
+
+    # K plus proches voisins
+    for i in range(8):
+        labels_kppv_2 = kppv(data_2["test"], data_2["orig"][0], 2*i+1, data_2["x"])
+        score_kppv_2 = calculScore(labels_kppv_2, data_2["clasapp"][0])
+        print("k : ", 2*i+1, "score : ", score_kppv_2/len(labels_kppv_2)*100)
+
+    # Naive Bayes
+    m, sigma, p = entrainementBayes(data_2["test"], list(data_2["orig"][0]))
+    labels_bayes_2 = bayes(m, sigma, p, data_2["x"])
+    score_bayes_2 = calculScore(labels_bayes_2, data_2["clasapp"][0])
+    print("Naive Bayes : ", score_bayes_2/len(labels_bayes_2)*100)
+
+    ## 2.3. Influence de la taille de l'ensemble d'apprentissage
+    print("Partie 2.3.")
+    data_3a = loadmat("p1_data3a.mat")
+
+    # K plus proches voisins
+    classes = [1] * 20
+    classes += [2] * 20
+    classes += [3] * 20
+    for i in range(8):
+        labels_kppv_3a = kppv(data_3a["test"], classes, 2*i+1, data_3a["x"])
+        score_kppv_3a = calculScore(labels_kppv_3a, data_3a["clasapp"][0])
+        print("k : ", 2*i+1, "score : ", score_kppv_3a/len(labels_kppv_3a)*100)
+
+    # Naive Bayes
+    m, sigma, p = entrainementBayes(data_3a["test"], classes)
+    labels_bayes_3a = bayes(m, sigma, p, data_3a["x"])
+    score_bayes_3a = calculScore(labels_bayes_3a, data_3a["clasapp"][0])
+    print("Naive Bayes : ", score_bayes_3a/len(labels_bayes_3a)*100)
+
+    ## 2.4. Influence de la taille de l'ensemble d'apprentissage
+    print("Partie 2.4.")
+    data_3b = loadmat("p1_data3b.mat")
+
+    # K plus proches voisins
+    classes = [1] * 150
+    classes += [2] * 150
+    classes += [3] * 150
+    for i in range(8):
+        labels_kppv_3b = kppv(data_3b["test"], classes, 2*i+1, data_3b["x"])
+        score_kppv_3b = calculScore(labels_kppv_3b, data_3b["clasapp"][0])
+        print("k : ", 2*i+1, "score : ", score_kppv_3b/len(labels_kppv_3b)*100)
+
+    # Naive Bayes
+    m, sigma, p = entrainementBayes(data_3b["test"], classes)
+    labels_bayes_3b = bayes(m, sigma, p, data_3b["x"])
+    score_bayes_3b = calculScore(labels_bayes_3b, data_3b["clasapp"][0])
+    print("Naive Bayes : ", score_bayes_3b/len(labels_bayes_3b)*100)
+
+    ## 2.5. Distribution inconnue
+    print("Partie 2.5.")
+    data_4 = loadmat("p1_data4.mat")
+
+    # K plus proches voisins
+    classes = [1] * 70
+    classes += [2] * 70
+    classes += [3] * 70
+    for i in range(8):
+        labels_kppv_4 = kppv(data_4["test"], classes, 2*i+1, data_4["x"])
+        score_kppv_4 = calculScore(labels_kppv_4, data_4["clasapp"][0])
+        print("k : ", 2*i+1, "score : ", score_kppv_4/len(labels_kppv_4)*100)
+
+    # Naive Bayes
+    m, sigma, p = entrainementBayes(data_4["test"], classes)
+    labels_bayes_4 = bayes(m, sigma, p, data_4["x"])
+    score_bayes_4 = calculScore(labels_bayes_4, data_4["clasapp"][0])
+    print("Naive Bayes : ", score_bayes_4/len(labels_bayes_4)*100)
