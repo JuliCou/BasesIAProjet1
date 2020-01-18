@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Oct 27 09:48:53 2019
+Created on 10/12/2019
+Last modified on 15/01/2020
 
 @author: Julie Courgibet
 """
@@ -115,7 +116,7 @@ def bayes(m, sigma, p, x):
         for c in range(nbClasses):
             probaF[c] = p[c]
             for f in range(nbFeatures):
-                proba[f, c] = 1/sqrt(2*pi)*exp(-pow(x[f, pt]-m[f, c], 2)/(2*pow(sigma[f, f, c], 2)))
+                proba[f, c] = 1/sqrt(2*pi*sigma[f, f, c])*exp(-pow(x[f, pt]-m[f, c], 2)/(2*sigma[f, f, c]))
                 probaF[c] *= proba[f, c]
 
         # Maximum value
